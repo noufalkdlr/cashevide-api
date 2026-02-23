@@ -14,10 +14,7 @@ echo "Running migrations..."
 python manage.py migrate --noinput
 
 # Collect static files only if in production mode
-if [ "$DEBUG" = "False" ]; then
-	echo "Collecting static files (Production mode)..."
-	python manage.py collectstatic --noinput
-fi
+python manage.py collectstatic --noinput
 
 # Execute the command specified in Dockerfile or Compose (e.g., Gunicorn/Runserver)
 exec "$@"
