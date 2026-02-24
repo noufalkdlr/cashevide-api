@@ -18,6 +18,7 @@ class UserProfile(models.Model):
     phone_number = models.CharField(max_length=20, blank=True, default="")
     job_title = models.CharField(max_length=100, blank=True, default="")
     referral_code = models.CharField(max_length=50, unique=True, db_index=True)
-
+    referred_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='referrals')
+    credit_points = models.PositiveIntegerField(default=0)
     def __str__(self):
         return self.user.email
