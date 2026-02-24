@@ -7,18 +7,14 @@ meta {
 post {
   url: {{baseUrl}}/api/users/signup/
   body: json
-  auth: bearer
-}
-
-auth:bearer {
-  token: {{token}}
+  auth: none
 }
 
 body:json {
   {
     "id": 0,
-    "email": "test3@email.com",
-    "username": "test3",
+    "email": "test4@email.com",
+    "username": "test4",
     "password": "noufal"
   }
 }

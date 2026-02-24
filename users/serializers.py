@@ -1,3 +1,5 @@
+import random
+
 from django.db import transaction
 from rest_framework import serializers
 from django.contrib.auth import authenticate
@@ -13,7 +15,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         with transaction.atomic():
             user = User.objects.create_user(**validated_data)
-            UserProfile.objects.create(user=user)
+            username = user.username
+            referral_code = f"{username.upper()}{random.randint(1000, 9999)}"
+            UserProfile.objects.create(user=user, referral_code=referral_code)
             return user
 
 
@@ -31,7 +35,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "full_name",
             "phone_number",
             "job_title",
+            "referral_code",
         ]
+        read_only_fields = ["referral_code"]
 
 
 class UserLoginSerializer(serializers.Serializer):

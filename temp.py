@@ -1,6 +1,4 @@
-def a(z, t):
-    return z, t
+a = "noufal"
 
-
-y = a("hai", True)
-print(y)
+b = a.upper()
+print(b)
