@@ -6,11 +6,23 @@ from .utils import generate_unique_referral_code
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
-    referral_code_input = serializers.CharField(write_only=True, required=False)
+    referral_code_input = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, allow_null=True
+    )
+    platform = serializers.ChoiceField(
+        choices=["web", "mobile"], default="mobile", write_only=True, required=False
+    )
 
     class Meta:
         model = User
-        fields = ["id", "email", "username", "password", "referral_code_input"]
+        fields = [
+            "id",
+            "email",
+            "username",
+            "password",
+            "referral_code_input",
+            "platform",
+        ]
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate_referral_code_input(self, referral_code_input):
@@ -21,10 +33,12 @@ class UserDetailSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     "The referral code provided is incorrect. Please check it."
                 )
+
         return referral_code_input
 
     def create(self, validated_data):
         referral_code_input = validated_data.pop("referral_code_input", None)
+        _ = validated_data.pop("platform", "mobile")
         with transaction.atomic():
             user = User.objects.create_user(**validated_data)
 
