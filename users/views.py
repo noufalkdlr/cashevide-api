@@ -27,14 +27,52 @@ class UserSignupView(CreateAPIView):
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        return Response(
-            {
-                "message": "User registered successfully!",
-                "data": response.data,
-            },
-            status=status.HTTP_201_CREATED,
-        )
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            user = serializer.save()
+            platform = request.data.get("platform", "mobile")
+
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+
+            if platform == "web":
+                response = Response(
+                    {
+                        "message": "login successful",
+                        "user": UserDetailSerializer(user).data,
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+                response.set_cookie(
+                    key="access_token",
+                    value=access_token,
+                    httponly=True,
+                    secure=not settings.DEBUG,
+                    samesite="Lax",
+                    domain=settings.COOKIE_DOMAIN,
+                )
+                response.set_cookie(
+                    key="refresh_token",
+                    value=str(refresh),
+                    httponly=True,
+                    secure=not settings.DEBUG,
+                    samesite="Lax",
+                    domain=settings.COOKIE_DOMAIN,
+                )
+            else:
+                response = Response(
+                    {
+                        "message": "login successful",
+                        "user": UserDetailSerializer(user).data,
+                        "access": access_token,
+                        "refresh": str(refresh),
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            return response
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @USER_PROFILE_SCHEMA
