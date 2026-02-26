@@ -39,6 +39,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         referral_code_input = validated_data.pop("referral_code_input", None)
         _ = validated_data.pop("platform", "mobile")
+
         with transaction.atomic():
             user = User.objects.create_user(**validated_data)
 
@@ -54,6 +55,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
             UserProfile.objects.create(
                 user=user, referral_code=referral_code, referred_by=referred_by_user
             )
+
             return user
 
 

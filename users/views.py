@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-from .models import UserProfile
+from .models import UserProfile, User
 from .serializers import (
     UserDetailSerializer,
     UserLoginSerializer,
@@ -83,6 +83,31 @@ class UserProfileView(RetrieveUpdateAPIView):
     def get_object(self):
         profile, _ = UserProfile.objects.get_or_create(user=self.request.user)
         return profile
+
+
+class CheckUserExistView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        email = request.query_params.get("email")
+        usernmae = request.query_params.get("username")
+
+        response_data = {}
+        if usernmae:
+            is_taken = User.objects.filter(usernmae=usernmae).exists()
+            response_data["username_taken"] = is_taken
+
+        if email:
+            is_taken = User.objects.filter(email=email).exists()
+            response_data["email_taken"] = is_taken
+
+        if not email and not usernmae:
+            return Response(
+                {"error": "Please provide a username or email to check."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(response_data)
 
 
 @USER_LOGIN_SCHEMA
