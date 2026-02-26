@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
+import logging
 from .models import UserProfile, User
 from .serializers import (
     UserDetailSerializer,
@@ -15,10 +16,13 @@ from .serializers import (
 from .schema import (
     USER_LOGIN_SCHEMA,
     USER_PROFILE_SCHEMA,
+    USER_CHECK_FIELD_SCHEMA,
     USER_LOGOUT_SCHEMA,
     USER_SIGNUP_SCHEMA,
     TOKEN_REFRESH_SCHEMA,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @USER_SIGNUP_SCHEMA
@@ -85,29 +89,40 @@ class UserProfileView(RetrieveUpdateAPIView):
         return profile
 
 
-class CheckUserExistView(APIView):
+@USER_CHECK_FIELD_SCHEMA
+class CheckFieldExistsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        email = request.query_params.get("email")
-        usernmae = request.query_params.get("username")
+        field = request.query_params.get("field")
+        value = request.query_params.get("value")
 
-        response_data = {}
-        if usernmae:
-            is_taken = User.objects.filter(usernmae=usernmae).exists()
-            response_data["username_taken"] = is_taken
-
-        if email:
-            is_taken = User.objects.filter(email=email).exists()
-            response_data["email_taken"] = is_taken
-
-        if not email and not usernmae:
+        if not field or not value:
             return Response(
-                {"error": "Please provide a username or email to check."},
+                {"error": "Please provide both 'field' and 'value'."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return Response(response_data)
+        allowed_fields = ["username", "email"]
+
+        if field not in allowed_fields:
+            return Response(
+                {"error": f"Checking '{field}' is not allowed or invalid."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        filter_kwargs = {field: value}
+
+        try:
+            is_taken = User.objects.filter(**filter_kwargs).exists()
+            return Response({"is_available": not is_taken})
+
+        except Exception as e:
+            logger.error(f"Error checking field {field}: {e}")
+            return Response(
+                {"error": "An unexpected error occurred. Please try again later."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 @USER_LOGIN_SCHEMA

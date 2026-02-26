@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_view,
+    inline_serializer,
+    OpenApiParameter,
+)
+from drf_spectacular.types import OpenApiTypes
 from .serializers import UserDetailSerializer, UserLoginSerializer
 
 
@@ -38,6 +44,32 @@ USER_PROFILE_SCHEMA = extend_schema_view(
         summary="Update User Profile",
         description="Updates the entire profile of the user.",
     ),
+)
+
+USER_CHECK_FIELD_SCHEMA = extend_schema_view(
+    get=extend_schema(
+        tags=["Users"],
+        summary="Check Field Availability",
+        description="Checks whether a specific field (like 'username' or 'email') is already taken in the database. \n\n"
+        "Returns `is_available: true` if the value is not taken and can be used. "
+        "Returns an error if the field is invalid or missing.",
+        parameters=[
+            OpenApiParameter(
+                name="field",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="The name of the field to check. Allowed values: `username`, `email`.",
+                required=True,
+            ),
+            OpenApiParameter(
+                name="value",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="The value you want to check for availability.",
+                required=True,
+            ),
+        ],
+    )
 )
 
 USER_LOGIN_SCHEMA = extend_schema_view(
