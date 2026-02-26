@@ -1,8 +1,13 @@
 from django.db import transaction
+from django.db.models import F
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import User, UserProfile
 from .utils import generate_unique_referral_code
+
+SIGNUP_BONUS_CREDITS = 20
+REFEREE_BONUS_CREDITS = 20
+REFERRER_BONUS_CREDITS = 30
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
@@ -36,27 +41,36 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
         return referral_code_input
 
+    @transaction.atomic
     def create(self, validated_data):
         referral_code_input = validated_data.pop("referral_code_input", None)
-        _ = validated_data.pop("platform", "mobile")
+        platform = validated_data.pop("platform", "mobile")
 
-        with transaction.atomic():
-            user = User.objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)
 
-            referred_by_user = None
-            if referral_code_input:
-                referrer_profile = UserProfile.objects.get(
-                    referral_code=referral_code_input
-                )
-                referred_by_user = referrer_profile.user
+        initial_credits = SIGNUP_BONUS_CREDITS
+        referred_by_user = None
 
-            referral_code = generate_unique_referral_code()
+        if referral_code_input:
+            initial_credits += REFEREE_BONUS_CREDITS
 
-            UserProfile.objects.create(
-                user=user, referral_code=referral_code, referred_by=referred_by_user
+            referrer_profile = UserProfile.objects.get(
+                referral_code=referral_code_input
             )
+            referrer_profile.credit_points = F("credit_points") + REFERRER_BONUS_CREDITS
+            referrer_profile.save(update_fields=["credit_points"])
+            referred_by_user = referrer_profile.user
 
-            return user
+        referral_code = generate_unique_referral_code()
+
+        UserProfile.objects.create(
+            user=user,
+            referral_code=referral_code,
+            referred_by=referred_by_user,
+            credit_points=initial_credits,
+        )
+
+        return user
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

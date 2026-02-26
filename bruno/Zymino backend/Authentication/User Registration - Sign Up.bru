@@ -2,20 +2,29 @@ meta {
   name: User Registration / Sign Up
   type: http
   seq: 3
+  tags: [
+    Authentication
+  ]
 }
 
 post {
   url: {{baseUrl}}/api/users/signup/
   body: json
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {
   {
     "id": 0,
-    "email": "demo@email.com",
-    "username": "demo4",
-    "password": "noufal"
+    "email": "",
+    "username": "",
+    "password": "",
+    "referral_code_input": "",
+    "platform": ""
   }
 }
 
@@ -31,7 +40,9 @@ example {
         "id": 0,
         "email": "",
         "username": "",
-        "password": ""
+        "password": "",
+        "referral_code_input": "",
+        "platform": ""
       }
     }
   }
@@ -55,7 +66,9 @@ example {
             "id": 0,
             "email": "",
             "username": "",
-            "password": ""
+            "password": "",
+            "referral_code_input": "",
+            "platform": ""
           }
         }
       '''
