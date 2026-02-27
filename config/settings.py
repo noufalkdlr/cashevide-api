@@ -187,7 +187,7 @@ SIMPLE_JWT = {
 
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Zymino backend",
+    "TITLE": "Cashevide Backend",
     "DESCRIPTION": "review app for freelancers",
     "VERSION": "1.0.0",
     "APPEND_COMPONENTS": {
@@ -223,3 +223,25 @@ SPECTACULAR_SETTINGS = {
         },
     ],
 }
+
+
+# --- PRODUCTION SECURITY SETTINGS ---
+if not DEBUG:
+    # Enforce HTTPS redirect
+    SECURE_SSL_REDIRECT = True
+
+    # Secure cookies (only sent over HTTPS)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    # Prevent Cross-Site Scripting (XSS) and content type sniffing
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    # HSTS (Strict Transport Security)
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Trust the X-Forwarded-Proto header from Nginx reverse proxy
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
