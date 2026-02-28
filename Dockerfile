@@ -35,6 +35,9 @@ RUN chmod +x /entrypoint.sh
 # Copy the rest of the application code WITH ownership
 COPY --chown=cashevide:cashevide . .
 
+RUN mkdir -p /app/staticfiles /app/media && \
+  chown -R cashevide:cashevide /app/staticfiles /app/media
+
 USER cashevide
 
 ENTRYPOINT ["/entrypoint.sh"]
