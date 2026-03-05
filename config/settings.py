@@ -187,8 +187,8 @@ SIMPLE_JWT = {
 
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Cashevide Backend",
-    "DESCRIPTION": "review app for freelancers",
+    "TITLE": "Cashevide API",
+    "DESCRIPTION": "An open-source initiative to ensure payment security and client transparency for freelancers. Built with transparency, powered by Python & Django.",
     "VERSION": "1.0.0",
     "APPEND_COMPONENTS": {
         "securitySchemes": {

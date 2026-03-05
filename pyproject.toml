@@ -1,7 +1,7 @@
 [project]
-name = "zymino-api"
+name = "cashevide-api"
 version = "0.1.0"
-description = "Add your description here"
+description = "An open-source initiative to ensure payment security and client transparency for freelancers. Built with transparency, powered by Python & Django."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
