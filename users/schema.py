@@ -33,11 +33,34 @@ USER_SIGNUP_SCHEMA = extend_schema_view(
     )
 )
 
+
 USER_DELETE_SCHEMA = extend_schema_view(
     delete=extend_schema(
         tags=["Authentication"],
         summary="Delete User Account",
-        description="Permanently deletes the currently authenticated user's account and their profile. If the request is from a web platform, it also clears the authentication cookies.",
+        description="Permanently deletes the currently authenticated user's account and their profile. If the request is from a mobile platform, pass the refresh token in the request body.",
+        request=inline_serializer(
+            name="DeleteUserRequest",
+            fields={
+                "refresh": serializers.CharField(
+                    required=False,
+                    help_text="Provide refresh token for mobile platform",
+                )
+            },
+        ),
+        responses={
+            200: OpenApiResponse(
+                response=inline_serializer(
+                    name="DeleteUserResponse",
+                    fields={
+                        "message": serializers.CharField(
+                            default="Account successfully deleted."
+                        )
+                    },
+                ),
+                description="Account successfully deleted",
+            )
+        },
     )
 )
 

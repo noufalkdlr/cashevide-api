@@ -227,3 +227,8 @@ postgres_data/
 
 docker-compose.override.yml
 dev.conf
+
+
+
+temp.py
+temp.json

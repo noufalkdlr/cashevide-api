@@ -11,8 +11,9 @@ REFERRER_BONUS_CREDITS = 30
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(write_only=True, required=True)
     referral_code_input = serializers.CharField(
-        write_only=True, required=False, allow_blank=True, allow_null=True
+        write_only=True, required=True, allow_blank=False, allow_null=False
     )
     platform = serializers.ChoiceField(
         choices=["web", "mobile"], default="mobile", write_only=True, required=False
@@ -25,25 +26,24 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "email",
             "username",
             "password",
+            "full_name",
             "referral_code_input",
             "platform",
         ]
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate_referral_code_input(self, referral_code_input):
-        if referral_code_input:
-            if not UserProfile.objects.filter(
-                referral_code=referral_code_input
-            ).exists():
-                raise serializers.ValidationError(
-                    "The referral code provided is incorrect. Please check it."
-                )
+        if not UserProfile.objects.filter(referral_code=referral_code_input).exists():
+            raise serializers.ValidationError(
+                "The referral code provided is incorrect. Please check it."
+            )
 
         return referral_code_input
 
     @transaction.atomic
     def create(self, validated_data):
         referral_code_input = validated_data.pop("referral_code_input", None)
+        full_name = validated_data.pop("full_name")
         platform = validated_data.pop("platform", "mobile")
 
         user = User.objects.create_user(**validated_data)
@@ -51,20 +51,18 @@ class UserDetailSerializer(serializers.ModelSerializer):
         initial_credits = SIGNUP_BONUS_CREDITS
         referred_by_user = None
 
-        if referral_code_input:
-            initial_credits += REFEREE_BONUS_CREDITS
+        initial_credits += REFEREE_BONUS_CREDITS
 
-            referrer_profile = UserProfile.objects.get(
-                referral_code=referral_code_input
-            )
-            referrer_profile.credit_points = F("credit_points") + REFERRER_BONUS_CREDITS
-            referrer_profile.save(update_fields=["credit_points"])
-            referred_by_user = referrer_profile.user
+        referrer_profile = UserProfile.objects.get(referral_code=referral_code_input)
+        referrer_profile.credit_points = F("credit_points") + REFERRER_BONUS_CREDITS
+        referrer_profile.save(update_fields=["credit_points"])
+        referred_by_user = referrer_profile.user
 
         referral_code = generate_unique_referral_code()
 
         UserProfile.objects.create(
             user=user,
+            full_name=full_name,
             referral_code=referral_code,
             referred_by=referred_by_user,
             credit_points=initial_credits,

@@ -80,18 +80,35 @@ class UserSignupView(CreateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @USER_DELETE_SCHEMA
 class UserDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
         user = request.user
+
+        refresh_token = request.data.get("refresh")
+
+        if not refresh_token:
+            refresh_token = request.COOKIES.get("refresh_token")
+
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception:
+                pass
+
         user.delete()
 
         response = Response(
             {"message": "Account successfully deleted."},
-            status=status.HTTP_204_NO_CONTENT,
+            status=status.HTTP_200_OK,
         )
+
+        response.delete_cookie("access_token", domain=settings.COOKIE_DOMAIN)
+        response.delete_cookie("refresh_token", domain=settings.COOKIE_DOMAIN)
 
         return response
 
