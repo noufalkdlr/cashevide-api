@@ -1,0 +1,38 @@
+info:
+  name: Delete User Account
+  type: http
+  seq: 3
+  tags:
+    - Authentication
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/users/profile/delete/"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 200 Response
+    description: Account successfully deleted
+    request:
+      url: "{{baseUrl}}/api/users/profile/delete/"
+      method: DELETE
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "message": ""
+          }

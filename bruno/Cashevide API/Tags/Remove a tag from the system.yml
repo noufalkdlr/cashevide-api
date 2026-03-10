@@ -1,0 +1,42 @@
+info:
+  name: Remove a tag from the system
+  type: http
+  seq: 6
+  tags:
+    - Tags
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/tags/:id/"
+  params:
+    - name: id
+      value: ""
+      type: path
+      description: A unique integer value identifying this tag.
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 204 Response
+    description: No response body
+    request:
+      url: "{{baseUrl}}/api/tags/:id/"
+      method: DELETE
+      params:
+        - name: id
+          value: ""
+          type: path
+          description: A unique integer value identifying this tag.
+    response:
+      status: 204
+      statusText: No Content
+      body:
+        type: text
+        data: ""

@@ -1,0 +1,46 @@
+info:
+  name: Delete a review (Superuser only)
+  type: http
+  seq: 6
+  tags:
+    - Reviews
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/client/:client_id/reviews/:id/"
+  params:
+    - name: client_id
+      value: ""
+      type: path
+    - name: id
+      value: ""
+      type: path
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 204 Response
+    description: No response body
+    request:
+      url: "{{baseUrl}}/api/client/:client_id/reviews/:id/"
+      method: DELETE
+      params:
+        - name: client_id
+          value: ""
+          type: path
+        - name: id
+          value: ""
+          type: path
+    response:
+      status: 204
+      statusText: No Content
+      body:
+        type: text
+        data: ""

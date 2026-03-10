@@ -39,13 +39,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         return tags
 
     def validate(self, attrs):
-        request = self.context.get("request")
-        view = self.context.get("view")
+        request = self.context["request"]
+        view = self.context["view"]
 
-        client_id = view.kwargs.get("client_id")  # type:ignore
+        client_id = view.kwargs["client_id"]
 
-        if request.method == "POST":  # type:ignore
-            if Review.objects.filter(author=request.user, client__id=client_id):  # type:ignore
+        if request.method == "POST":
+            if Review.objects.filter(
+                author=request.user, client__id=client_id
+            ).exists():
                 raise serializers.ValidationError(
                     {"detail": "You have already reviewed this client!"}
                 )

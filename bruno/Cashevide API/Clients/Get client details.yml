@@ -1,0 +1,48 @@
+info:
+  name: Get client details
+  type: http
+  seq: 4
+  tags:
+    - Clients
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/clients/:id/"
+  params:
+    - name: id
+      value: ""
+      type: path
+      description: A UUID string identifying this reviewed client.
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 200 Response
+    request:
+      url: "{{baseUrl}}/api/clients/:id/"
+      method: GET
+      params:
+        - name: id
+          value: ""
+          type: path
+          description: A UUID string identifying this reviewed client.
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "",
+            "phone_number": ""
+          }

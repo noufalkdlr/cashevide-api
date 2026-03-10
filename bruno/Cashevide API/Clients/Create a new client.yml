@@ -1,0 +1,50 @@
+info:
+  name: Create a new client
+  type: http
+  seq: 3
+  tags:
+    - Clients
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/clients/"
+  body:
+    type: json
+    data: |-
+      {
+        "phone_number": ""
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 201 Response
+    request:
+      url: "{{baseUrl}}/api/clients/"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "phone_number": ""
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "",
+            "phone_number": ""
+          }

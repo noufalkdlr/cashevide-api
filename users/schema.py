@@ -11,6 +11,7 @@ from .serializers import (
     OTPRequestSerializer,
     OTPVerificationSerializer,
     UserDetailSerializer,
+    PasswordChangeSerializer,
     UserLoginSerializer,
     UserProfileSerializer,
 )
@@ -177,6 +178,51 @@ USER_CHECK_FIELD_SCHEMA = extend_schema_view(
                 required=True,
             ),
         ],
+    )
+)
+
+PASSWORD_CHANGE_SCHEMA = extend_schema_view(
+    post=extend_schema(
+        tags=["Authentication"],
+        summary="Change User Password",
+        description="Allows an authenticated user to change their password securely. Requires the current password and the new password. Upon a successful password change, the user's refresh token is blacklisted, cookies are cleared, and they must log in again.",
+        request=PasswordChangeSerializer,
+        responses={
+            200: OpenApiResponse(
+                response=inline_serializer(
+                    name="PasswordChangeSuccess",
+                    fields={
+                        "detail": serializers.CharField(
+                            default="Password has been updated successfully. Please login again."
+                        )
+                    },
+                ),
+                description="Password successfully changed and user logged out from the current session.",
+            ),
+            400: OpenApiResponse(
+                response=inline_serializer(
+                    name="PasswordChangeError",
+                    fields={
+                        "old_password": serializers.ListField(
+                            child=serializers.CharField(
+                                default="Invalid current password."
+                            ),
+                            required=False,
+                        ),
+                        "new_password": serializers.ListField(
+                            child=serializers.CharField(
+                                default="This field is required."
+                            ),
+                            required=False,
+                        ),
+                    },
+                ),
+                description="Bad Request. Invalid current password or validation errors.",
+            ),
+            401: OpenApiResponse(
+                description="Unauthorized. User must be authenticated to change password.",
+            ),
+        },
     )
 )
 

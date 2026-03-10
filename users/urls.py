@@ -8,6 +8,7 @@ from .views import (
     CustomTokenRefreshView,
     UserProfileView,
     CheckFieldExistsView,
+    PasswordChangeView,
     UserDeleteView,
 )
 
@@ -20,5 +21,6 @@ urlpatterns = [
     path("check-user/", CheckFieldExistsView.as_view(), name="check-user"),
     path("login/", LoginView.as_view(), name="login"),
     path("token/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
+    path("change-password/", PasswordChangeView.as_view(), name="change_password"),
     path("logout/", LogoutView.as_view(), name="logout"),
 ]

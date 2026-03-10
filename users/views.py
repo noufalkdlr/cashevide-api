@@ -1,5 +1,5 @@
 from django.conf import settings
-from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView, DestroyAPIView
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
@@ -16,6 +16,7 @@ from .serializers import (
     UserDetailSerializer,
     UserLoginSerializer,
     UserProfileSerializer,
+    PasswordChangeSerializer,
 )
 from .utils import generate_otp, send_otp_email
 from .schema import (
@@ -24,6 +25,7 @@ from .schema import (
     USER_LOGIN_SCHEMA,
     USER_PROFILE_SCHEMA,
     USER_CHECK_FIELD_SCHEMA,
+    PASSWORD_CHANGE_SCHEMA,
     USER_LOGOUT_SCHEMA,
     USER_SIGNUP_SCHEMA,
     TOKEN_REFRESH_SCHEMA,
@@ -133,38 +135,6 @@ class UserSignupView(CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@USER_DELETE_SCHEMA
-class UserDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, *args, **kwargs):
-        user = request.user
-
-        refresh_token = request.data.get("refresh")
-
-        if not refresh_token:
-            refresh_token = request.COOKIES.get("refresh_token")
-
-        if refresh_token:
-            try:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-            except Exception:
-                pass
-
-        user.delete()
-
-        response = Response(
-            {"message": "Account successfully deleted."},
-            status=status.HTTP_200_OK,
-        )
-
-        response.delete_cookie("access_token", domain=settings.COOKIE_DOMAIN)
-        response.delete_cookie("refresh_token", domain=settings.COOKIE_DOMAIN)
-
-        return response
-
-
 @USER_PROFILE_SCHEMA
 class UserProfileView(RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
@@ -268,6 +238,43 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@PASSWORD_CHANGE_SCHEMA
+class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordChangeSerializer(
+            data=request.data, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+
+            refresh_token = serializer.validated_data.get("refresh")
+
+            if not refresh_token:
+                refresh_token = request.COOKIES.get("refresh_token")
+
+            if refresh_token:
+                try:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except Exception as e:
+                    logger.error(f"Token blacklist failed during password change: {e}")
+                    pass
+
+            response = Response(
+                {"detail": "Password has been updated successfully."},
+                status=status.HTTP_200_OK,
+            )
+
+            response.delete_cookie("access_token", domain=settings.COOKIE_DOMAIN)
+            response.delete_cookie("refresh_token", domain=settings.COOKIE_DOMAIN)
+
+            return response
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @USER_LOGOUT_SCHEMA
 class LogoutView(APIView):
     permission_classes = [AllowAny]
@@ -365,4 +372,36 @@ class CustomTokenRefreshView(TokenRefreshView):
                 },
                 status=status.HTTP_200_OK,
             )
+        return response
+
+
+@USER_DELETE_SCHEMA
+class UserDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+
+        refresh_token = request.data.get("refresh")
+
+        if not refresh_token:
+            refresh_token = request.COOKIES.get("refresh_token")
+
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception:
+                pass
+
+        user.delete()
+
+        response = Response(
+            {"message": "Account successfully deleted."},
+            status=status.HTTP_200_OK,
+        )
+
+        response.delete_cookie("access_token", domain=settings.COOKIE_DOMAIN)
+        response.delete_cookie("refresh_token", domain=settings.COOKIE_DOMAIN)
+
         return response

@@ -1,0 +1,50 @@
+info:
+  name: Check Field Availability
+  type: http
+  seq: 1
+  tags:
+    - Users
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/users/check-user/"
+  params:
+    - name: field
+      value: ""
+      type: query
+      description: "The name of the field to check. Allowed values: `username`, `email`."
+    - name: value
+      value: ""
+      type: query
+      description: The value you want to check for availability.
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 200 Response
+    description: No response body
+    request:
+      url: "{{baseUrl}}/api/users/check-user/"
+      method: GET
+      params:
+        - name: field
+          value: ""
+          type: query
+          description: "The name of the field to check. Allowed values: `username`, `email`."
+        - name: value
+          value: ""
+          type: query
+          description: The value you want to check for availability.
+    response:
+      status: 200
+      statusText: OK
+      body:
+        type: text
+        data: ""

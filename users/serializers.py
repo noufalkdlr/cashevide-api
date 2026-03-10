@@ -1,4 +1,4 @@
-from django.db.models import F
+from django.db.models import F, CharField
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import User, UserProfile
@@ -69,13 +69,13 @@ class UserDetailSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {"password": {"write_only": True}}
 
-    def validate_referral_code_input(self, referral_code_input):
-        if not UserProfile.objects.filter(referral_code=referral_code_input).exists():
+    def validate_referral_code_input(self, value):
+        if not UserProfile.objects.filter(referral_code=value).exists():
             raise serializers.ValidationError(
                 "The referral code provided is incorrect. Please check it."
             )
 
-        return referral_code_input
+        return value
 
     def validate(self, attrs):
         email = attrs.get("email")
@@ -137,3 +137,24 @@ class UserLoginSerializer(serializers.Serializer):
             attrs["user"] = user
             return attrs
         raise serializers.ValidationError("Incorrect credentials!")
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    current_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+    refresh = serializers.CharField(write_only=True, required=False)
+
+    def validate_current_password(self, value):
+
+        user = self.context["request"].user
+
+        if not user.check_password(value):
+            raise serializers.ValidationError({"detail": "Invalid current password."})
+
+        return value
+
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        user.set_password(self.validated_data["new_password"])
+        user.save()
+        return user

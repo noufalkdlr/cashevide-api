@@ -1,0 +1,60 @@
+info:
+  name: Post a review for a client
+  type: http
+  seq: 2
+  tags:
+    - Reviews
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/client/:client_id/reviews/"
+  params:
+    - name: client_id
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "tags": []
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 201 Response
+    request:
+      url: "{{baseUrl}}/api/client/:client_id/reviews/"
+      method: POST
+      params:
+        - name: client_id
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "tags": []
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": 0,
+            "author": 0,
+            "tags": [],
+            "client": ""
+          }
