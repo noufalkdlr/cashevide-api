@@ -1,0 +1,21 @@
+### Login
+
+POST {{base_url}}/users/login/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "demo@email.com",
+  "password": "noufal",
+  "platform": "mobile"
+}
+
+> {%
+   client.global.set("token", response.body.access);
+%}
+
+
+### GET Profile
+
+GET {{base_url}}/users/profile/me/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
