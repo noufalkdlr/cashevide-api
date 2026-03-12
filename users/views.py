@@ -17,6 +17,7 @@ from .serializers import (
     UserLoginSerializer,
     UserProfileSerializer,
     PasswordChangeSerializer,
+    PasswordResetSerializer,
 )
 from .utils import generate_otp, send_otp_email
 from .schema import (
@@ -271,6 +272,45 @@ class PasswordChangeView(APIView):
             response.delete_cookie("refresh_token", domain=settings.COOKIE_DOMAIN)
 
             return response
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OTPRequestView2(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+
+        email = request.data.get("email")
+        otp = generate_otp()
+
+        try:
+            send_otp_email(email, otp)
+            cache.set(f"otp_{email}", value=otp, timeout=300)
+            return Response(
+                {"message": "An OTP has been successfully sent to your email address."},
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception:
+            return Response(
+                {"error": "Failed to send the OTP. Please try again later."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class PasswordResetView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response({"detail": "Password has been updated successfully."})
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

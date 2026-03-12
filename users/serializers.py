@@ -1,5 +1,6 @@
 from django.db.models import F, CharField
 from rest_framework import serializers
+from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
 from .models import User, UserProfile
 from .services import create_user_account
@@ -157,4 +158,32 @@ class PasswordChangeSerializer(serializers.Serializer):
         user = self.context["request"].user
         user.set_password(self.validated_data["new_password"])
         user.save()
+        return user
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+
+    def validate_email(self, value):
+
+        is_verified = cache.get(f"verified_{value}")
+
+        if not is_verified:
+            raise serializers.ValidationError(
+                {
+                    "email": "This email address has not been verified. Please verify it using an OTP first."
+                }
+            )
+        return value
+
+    def save(self, **kwargs):
+        email = self.validated_data["email"]
+        user = get_object_or_404(User, email=email)
+        user.set_password(self.validated_data["new_password"])
+        user.save()
+
+        if email:
+            cache.delete(f"otp_{email}")
+            cache.delete(f"verified_{email}")
         return user

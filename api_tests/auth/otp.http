@@ -1,0 +1,19 @@
+### Request OTP
+
+POST {{base_url}}/users/request-otp-2/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "demo@email.com"
+}
+
+
+### Verify OPT
+
+POST {{base_url}}/users/verify-otp/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "demo@email.com",
+  "otp": "199930"
+}

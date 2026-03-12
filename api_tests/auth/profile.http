@@ -1,0 +1,5 @@
+### GET Profile
+
+GET {{base_url}}/users/profile/me/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}

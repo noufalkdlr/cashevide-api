@@ -1,0 +1,78 @@
+### Signup
+
+POST {{base_url}}/users/signup/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "demo2@email.com",
+  "full_name": "Demo  ",
+  "password": "noufal",
+  "platform": "web",
+  "referral_code_input": "NOUFAL",
+  "username": "demo2"
+}
+
+> {%
+  var cookieHeader = response.headers.valueOf("Set-Cookie");
+
+  if (cookieHeader) {
+      var match = cookieHeader.match(/access_token=([^;]+)/);
+
+      if (match) {
+          client.global.set("token", match[1]);
+      }
+  }
+  else{
+      client.global.set("token", response.body.access)
+    }
+%}
+
+
+### Login
+
+POST {{base_url}}/users/login/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "demo@email.com",
+  "password": "noufal2",
+  "platform": "web"
+}
+
+> {%
+  var cookieHeader = response.headers.valueOf("Set-Cookie");
+
+  if (cookieHeader) {
+      var match = cookieHeader.match(/access_token=([^;]+)/);
+
+      if (match) {
+          client.global.set("token", match[1]);
+      }
+  }
+  else{
+      client.global.set("token", response.body.access)
+    }
+%}
+
+
+### Change Password
+
+POST {{base_url}}/users/change-password/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "current_password": "noufal2",
+  "new_password": "noufal"
+}
+
+
+### Reset Password
+
+POST {{base_url}}/users/reset-password/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "demo@email.com",
+  "new_password": "noufal2"
+}
