@@ -1,3 +1,4 @@
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
@@ -61,6 +62,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
     platform = serializers.ChoiceField(
         choices=["web", "mobile"], default="mobile", write_only=True, required=False
     )
+    password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password]
+    )
 
     class Meta:
         model = User
@@ -73,7 +77,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "referral_code_input",
             "platform",
         ]
-        extra_kwargs = {"password": {"write_only": True}}
 
     def validate_referral_code_input(self, value):
         if not UserProfile.objects.filter(referral_code=value).exists():
@@ -147,7 +150,9 @@ class UserLoginSerializer(serializers.Serializer):
 
 class PasswordChangeSerializer(serializers.Serializer):
     current_password = serializers.CharField(write_only=True)
-    new_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password]
+    )
     refresh = serializers.CharField(write_only=True, required=False)
 
     def validate_current_password(self, value):
@@ -185,7 +190,9 @@ class PasswordResetVerificationSerializer(BaseOTPVerificationSerializer):
 
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
-    new_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password]
+    )
 
     def validate_email(self, value):
 
