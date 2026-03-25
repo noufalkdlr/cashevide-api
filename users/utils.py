@@ -1,16 +1,12 @@
+import logging
 import random
 import string
-import logging
+
 from django.conf import settings
-
-
+from django.core.mail import send_mail
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import status
-
-
-from django.core.mail import send_mail
-
 
 logger = logging.getLogger(__name__)
 
@@ -104,9 +100,17 @@ def send_otp_email(email, otp, purpose="signup"):
     subject = "Your Cashevide Verification Code"
 
     if purpose == "password_reset":
-        message = f"Hello,\n\nYour verification code for resetting your password is: {otp}\n\nThis code will expire in 5 minutes.\n\nThank you!"
+        message = (
+            "Hello,"
+            f"\n\nYour verification code for resetting your password is: {otp}"
+            "\n\nThis code will expire in 5 minutes.\n\nThank you!"
+        )
     else:
-        message = f"Welcome to Cashevide!\n\nYour verification code for signup is: {otp}\n\nThis code will expire in 5 minutes.\n\nThank you!"
+        message = (
+            "Welcome to Cashevide!"
+            f"\n\nYour verification code for signup is: {otp}\n\n"
+            "This code will expire in 5 minutes.\n\nThank you!"
+        )
 
     from_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [email]

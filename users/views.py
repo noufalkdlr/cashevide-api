@@ -1,47 +1,44 @@
+import logging
+
 from django.conf import settings
-from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import status
 from django.core.cache import cache
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-import logging
-
-from .models import UserProfile, User
-
+from .models import User, UserProfile
+from .schema import (
+    OTP_REQUEST_SCHEMA,
+    OTP_VERIFICATION_SCHEMA,
+    PASSWORD_CHANGE_SCHEMA,
+    PASSWORD_RESET_OTP_REQUEST_SCHEMA,
+    PASSWORD_RESET_OTP_VERIFICATION_SCHEMA,
+    PASSWORD_RESET_SCHEMA,
+    TOKEN_REFRESH_SCHEMA,
+    USER_CHECK_FIELD_SCHEMA,
+    USER_DELETE_SCHEMA,
+    USER_LOGIN_SCHEMA,
+    USER_LOGOUT_SCHEMA,
+    USER_PROFILE_SCHEMA,
+    USER_SIGNUP_SCHEMA,
+)
 from .serializers import (
+    PasswordChangeSerializer,
+    PasswordResetOTPRequestSerializer,
+    PasswordResetSerializer,
+    PasswordResetVerificationSerializer,
     SignupOTPRequestSerializer,
     SignupOTPVerificationSerializer,
     UserDetailSerializer,
     UserLoginSerializer,
     UserProfileSerializer,
-    PasswordChangeSerializer,
-    PasswordResetOTPRequestSerializer,
-    PasswordResetVerificationSerializer,
-    PasswordResetSerializer,
 )
-
-from .utils import generate_otp, send_otp_email, set_auth_cookies, clear_auth_session
-
-from .schema import (
-    OTP_REQUEST_SCHEMA,
-    OTP_VERIFICATION_SCHEMA,
-    USER_LOGIN_SCHEMA,
-    USER_PROFILE_SCHEMA,
-    USER_CHECK_FIELD_SCHEMA,
-    PASSWORD_CHANGE_SCHEMA,
-    USER_LOGOUT_SCHEMA,
-    USER_SIGNUP_SCHEMA,
-    PASSWORD_RESET_OTP_REQUEST_SCHEMA,
-    PASSWORD_RESET_OTP_VERIFICATION_SCHEMA,
-    PASSWORD_RESET_SCHEMA,
-    TOKEN_REFRESH_SCHEMA,
-    USER_DELETE_SCHEMA,
-)
+from .utils import clear_auth_session, generate_otp, send_otp_email, set_auth_cookies
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +65,8 @@ class BaseOTPRequestView(APIView):
                 )
                 return Response(
                     {
-                        "message": "An OTP has been successfully sent to your email address."
+                        "message": "An OTP has been successfully "
+                        "sent to your email address."
                     },
                     status=status.HTTP_200_OK,
                 )

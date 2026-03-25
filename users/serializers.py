@@ -1,10 +1,11 @@
-from django.contrib.auth.password_validation import validate_password
-from rest_framework import serializers
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.cache import cache
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+
 from .models import User, UserProfile
 from .services import create_user_account
-from django.core.cache import cache
 
 
 class BaseOTPVerificationSerializer(serializers.Serializer):
